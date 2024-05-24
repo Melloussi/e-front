@@ -13,7 +13,7 @@ export default function TransferDetails() {
 
   useEffect(() => {
     if (name) {
-      fetch(`/api/transfers/${name}`)
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/transfers/${name}`)
         .then((response) => response.json())
         .then((data) => {
           setTransfer(data);
@@ -30,7 +30,7 @@ export default function TransferDetails() {
   };
 
   const handleSave = () => {
-    fetch(`/api/transfers/${name}`, {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/transfers/${name}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

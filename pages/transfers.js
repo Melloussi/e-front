@@ -7,7 +7,7 @@ export default function Transfers() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetch('/api/transfers')
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/transfers`)
       .then((response) => response.json())
       .then((data) => setTransfers(data))
       .catch((error) => console.error('Error fetching transfers:', error));
