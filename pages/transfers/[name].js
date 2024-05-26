@@ -13,7 +13,7 @@ export default function TransferDetails() {
 
   useEffect(() => {
     if (name) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/transfers/${name}`)
+      fetch(`/api/transfers/${name}`)
         .then((response) => response.json())
         .then((data) => {
           setTransfer(data);
@@ -30,7 +30,7 @@ export default function TransferDetails() {
   };
 
   const handleSave = () => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/transfers/${name}`, {
+    fetch(`/api/transfers/${name}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export default function TransferDetails() {
       {popupImage && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50">
           <div className="relative">
-            <img src={popupImage} alt="Full Screen" className="max-w-full max-h-full" />
+            <img src={popupImage} alt="Full Screen" className="w-[70vw] h-[70vh] object-contain mx-auto" />
             <button
               onClick={() => setPopupImage(null)}
               className="absolute top-0 right-0 m-4 p-2 bg-white text-black rounded"
