@@ -1,6 +1,9 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
+import ScrollToTopButton from '../components/ScrollToTopButton';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export default function TransferDetails() {
   const router = useRouter();
@@ -22,6 +25,20 @@ export default function TransferDetails() {
         .catch((error) => console.error('Error fetching transfer:', error));
     }
   }, [name]);
+  //Reload & Exit confirmation
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      const message = 'Are you sure you want to leave? Changes you made may not be saved.';
+      event.returnValue = message;
+      return message;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   const updateItem = (index, key, value) => {
     const newItems = [...items];
@@ -54,7 +71,14 @@ export default function TransferDetails() {
   if (!transfer) {
     return <div>Loading...</div>;
   }
+  
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
+  const clearSearch = () => {
+    setSearchTerm('');
+  };
   return (
     <div className="min-h-screen bg-lightbrown p-4 sm:p-6 lg:p-8">
       <Head>
@@ -63,16 +87,31 @@ export default function TransferDetails() {
       <main className="container mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center text-white mb-4">{transfer.name}</h1>
         <p className="text-center text-white mb-4">Created Date: {new Date(transfer.createdDate).toLocaleDateString()}</p>
-        <input
-          type="text"
-          placeholder="Search items"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full p-2 mb-4 border border-gray-300 rounded"
-        />
+
+        <ScrollToTopButton />
+
         <button onClick={handleSave} className="block ml-auto w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
           Save
         </button>
+
+      <div className="relative w-full  mb-8" >
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        placeholder="Search items"
+        className="block w-full p-2 pr-10 border border-gray-300 rounded p-4"
+      />
+      {searchTerm && (
+        <button
+        onClick={clearSearch}
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 bg-red-500 text-white rounded-full focus:outline-none flex items-center justify-center w-6 h-6"
+      >
+        <FontAwesomeIcon icon={faTimes} />
+      </button>
+      )}
+    
+    </div>
         {showMessage && <div className="text-center text-green-600">Data updated</div>}
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white rounded shadow text-xs sm:text-lg">
@@ -95,7 +134,12 @@ export default function TransferDetails() {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item, index) => (
+              {
+              
+              
+              filteredItems.map((item, index) => (
+
+                
                 <tr key={index} className="border-t">
                   <td className="p-2 text-center">{item.position}</td>
                   <td className="p-2 flex items-center">
@@ -136,7 +180,11 @@ export default function TransferDetails() {
                     />
                   </td>
                 </tr>
-              ))}
+              )
+              
+              )
+              
+              }
             </tbody>
           </table>
         </div>
