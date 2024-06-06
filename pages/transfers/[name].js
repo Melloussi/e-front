@@ -13,6 +13,7 @@ export default function TransferDetails() {
   const [searchTerm, setSearchTerm] = useState('');
   const [popupImage, setPopupImage] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
+  const [saveSwitch, setSaveSwitch] = useState(0);
 
   useEffect(() => {
     if (name) {
@@ -39,6 +40,26 @@ export default function TransferDetails() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
+
+  let saveTimer;
+
+  //Auto Save after 3 second
+  useEffect(() => {
+    if(saveSwitch == 2){
+      if (saveTimer) {
+        clearTimeout(saveTimer);
+      }
+  
+      saveTimer = setTimeout(() => {
+        handleSave()
+      }, 3000);
+  
+      return () => clearTimeout(saveTimer);
+    }else{
+      setSaveSwitch(saveSwitch+1);
+      console.log("Avoid Saving...")
+    }
+  }, [items]);
 
   const updateItem = (index, key, value) => {
     const newItems = [...items];
@@ -161,22 +182,27 @@ export default function TransferDetails() {
                     </div>
                   </td>
                   <td className="p-2 text-center">{item.quantity}</td>
-                  <td className="p-2 text-center">
+                  <td className="p-2 text-center w-1/12">
                     <input
                       type="number"
                       value={item.received}
                       onChange={(e) => updateItem(index, 'received', parseInt(e.target.value, 10))}
                       min="0"
-                      className="w-full p-1 border rounded bg-emerald-100"
+                      //className="w-full pl-1 border rounded bg-emerald-100"
+                     //className="w-6 p-1 border rounded bg-emerald-100 text-center"
+                     className="w-8 sm:w-20 p-1 border rounded bg-emerald-100 text-center"
+
                     />
                   </td>
-                  <td className="p-2 text-center">
+                  <td className="p-2 text-center w-1/12">
                     <input
                       type="number"
                       value={item.damage}
                       onChange={(e) => updateItem(index, 'damage', parseInt(e.target.value, 10))}
                       min="0"
-                      className="w-full p-1 border rounded bg-red-100"
+                      //className="w-full p-1 border rounded bg-red-100"
+                      //className="w-6 p-1 border rounded bg-red-100 text-center"
+                      className="w-8 sm:w-20 p-1 border rounded bg-red-100 text-center"
                     />
                   </td>
                 </tr>
