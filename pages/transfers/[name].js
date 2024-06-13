@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
 import Head from 'next/head';
+import { updateTransferStatus } from '../api/transfers/updateTransferStatus';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTimes } from '@fortawesome/free-solid-svg-icons';
@@ -14,6 +16,47 @@ export default function TransferDetails() {
   const [popupImage, setPopupImage] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
   const [saveSwitch, setSaveSwitch] = useState(0);
+  const IP = "in progress";
+  const CD = "completed";
+  //-------------- update statue ----
+  
+  const [status, setStatus] = useState('in progress');
+  const [message, setMessage] = useState('');
+  
+  //-------------------
+
+  const handleSubmit = async (name, status) => {
+    //e.preventDefault();
+
+    try {
+      const result = await updateTransferStatus(name, status);
+      setMessage(`Status updated successfully: ${JSON.stringify(result)}`);
+    } catch (error) {
+      setMessage(`Error updating status: ${error.message}`);
+    }
+
+   /* switch (name) {
+      case 'in progress':
+        updatedStatus = 'in progress';
+        break;
+      case 'completed':
+        updatedStatus = 'completed';
+        break;
+      default:
+        updatedStatus = status; // Use the status from the input if no case matches
+    }*/
+
+  };
+
+  const markAsCompleted = () => {
+    if (status !== CD) {
+      handleSubmit(name, CD);
+      setStatus(CD);
+      console.log("Transfer Status Changed TO: "+status);
+    } else {
+      console.log("[-] Transfer Status doesn't Changed: " + status + " [-]");
+    }
+  };
 
   useEffect(() => {
     if (name) {
@@ -22,6 +65,7 @@ export default function TransferDetails() {
         .then((data) => {
           setTransfer(data);
           setItems(data.items);
+          setStatus(data.status)
         })
         .catch((error) => console.error('Error fetching transfer:', error));
     }
@@ -81,6 +125,15 @@ export default function TransferDetails() {
         setTransfer(data);
         setShowMessage(true); // Show the "data updated" message
         setTimeout(() => setShowMessage(false), 3000); // Hide the message after 3 seconds
+
+        
+        if(status !== IP){
+          handleSubmit(name, IP)
+          setStatus(IP)
+          console.log("Transfer Statu Changed TO: "+status)
+        }else{
+          console.log("[-]Transfer Statu doesn't Changed: "+status+" [-]")
+        }
       })
       .catch((error) => console.error('Error saving transfer:', error));
   };
@@ -108,12 +161,27 @@ export default function TransferDetails() {
       <main className="container mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-center text-white mb-4">{transfer.name}</h1>
         <p className="text-center text-white mb-4">Created Date: {new Date(transfer.createdDate).toLocaleDateString()}</p>
+        <p className="text-center text-white mb-4">status: {status}</p>
 
         <ScrollToTopButton />
 
-        <button onClick={handleSave} className="block ml-auto w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
+        <div className='flex flex-row-reverse'>
+
+        <button onClick={handleSave} className="ml-8 w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
           Save
         </button>
+        
+        <Link href={`/preview/${transfer.name}`}>
+        <button className=" ml-8 w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
+          preview
+        </button>
+        </Link>
+        <button onClick={markAsCompleted} className=" w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
+          mark as complet
+        </button>
+        
+       
+        </div>
 
       <div className="relative w-full  mb-8" >
       <input
