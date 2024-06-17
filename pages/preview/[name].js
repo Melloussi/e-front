@@ -1,9 +1,11 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import ScrollToTopButton from '../components/ScrollToTopButton';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faCopy } from '@fortawesome/free-solid-svg-icons';
+import Collapsible from 'react-collapsible';
 
 export default function TransferDetails() {
   const router = useRouter();
@@ -50,6 +52,95 @@ export default function TransferDetails() {
   const clearSearch = () => {
     setSearchTerm('');
   };
+
+  //---------------------
+
+  const getRowStyle = (item) => {
+    if (transfer.status !== 'completed') return '';
+
+    if (item.damage > 0) {
+      return 'bg-red-300 border-2 border-red-600';
+    } else if (item.received > item.quantity) {
+      return 'bg-orange-400 border-2 border-orange-600';
+    } else if (item.received < item.quantity) {
+      return 'bg-yellow-100 border-2 border-yellow-600';
+    } else if (item.received === item.quantity && item.damage === 0) {
+      return 'bg-green-100 border-2 border-green-600';
+    }
+
+    return '';
+  };
+
+  //------------------------
+
+  const generateSummary = () => {
+    let summary = '';
+
+    const removedItems = items.filter(item => item.received === 0);
+    const damagedItems = items.filter(item => item.damage > 0);
+    const receivedItems = items.filter(item => item.received > 0 && item.received !== item.quantity);
+
+    if (removedItems.length > 0) {
+      summary += '- Removed -\n\n';
+      removedItems.forEach(item => {
+        summary += `- ${item.quantity}x ${item.itemTitle} - not received, removed from the transfer\n`;
+      });
+      summary += '\n';
+    }
+
+    if (damagedItems.length > 0) {
+      summary += '- Damaged -\n\n';
+      damagedItems.forEach(item => {
+        summary += `- ${item.damage}x - ${item.itemTitle}\n`;
+      });
+      summary += '\n';
+    }
+
+    if (receivedItems.length > 0) {
+      summary += '- Received -\n\n';
+      receivedItems.forEach(item => {
+        summary += `- ${item.itemTitle} - received ${item.received} instead of ${item.quantity}\n`;
+      });
+    }
+
+    return summary;
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const SummarySection = ({ title, content, onCopy }) => {
+    return (
+      <div className="border-2 border-[#4b4032] rounded-lg">
+        <Collapsible
+          trigger={
+            <h2 className="text-lg font-bold text-gray-200 bg-[#71614b] p-4 cursor-pointer flex justify-between items-center">
+              <span>{title}</span>
+              <span>&#9660;</span>
+            </h2>
+          }
+          transitionTime={250}
+        >
+          <div className="p-4 bg-[#937d62] text-white">
+            <div className="whitespace-pre-line">{content}</div>
+            <button
+              onClick={onCopy}
+              className="mt-2 px-4 py-2 bg-[#71614b] text-white rounded hover:bg-[#b1a698] focus:outline-none"
+            >
+              <FontAwesomeIcon icon={faCopy} /> Copy
+            </button>
+          </div>
+        </Collapsible>
+      </div>
+    );
+  };
+
+  const removedItems = generateSummary().includes('- Removed -') ? generateSummary().split('- Removed -')[1].split('- Damaged -')[0].trim() : '';
+const damagedItems = generateSummary().includes('- Damaged -') ? generateSummary().split('- Damaged -')[1].split('- Received -')[0].trim() : '';
+const receivedItems = generateSummary().includes('- Received -') ? generateSummary().split('- Received -')[1].trim() : '';
+
+  //----------------------
   return (
     <div className="min-h-screen bg-lightbrown p-4 sm:p-6 lg:p-8">
       <Head>
@@ -60,6 +151,17 @@ export default function TransferDetails() {
         <p className="text-center text-white mb-4">Created Date: {new Date(transfer.createdDate).toLocaleDateString()}</p>
 
         <ScrollToTopButton />
+       {/*
+       
+       -------- Edit Button Keep it hiding for now ----
+
+       <Link href={`/transfers/${transfer.name}`}>
+        <button className=" ml-8 w-20 sm:w-40 py-2 mb-4 bg-[#b39570] border-2 border-[#8a7357] text-white font-bold rounded">
+          Edite
+        </button>
+        </Link>
+        -----------------------------------------------
+        */}
 
       <div className="relative w-full  mb-8" >
       <input
@@ -102,12 +204,9 @@ export default function TransferDetails() {
             </thead>
             <tbody>
               {
-              
-              
+            
               filteredItems.map((item, index) => (
-
-                
-                <tr key={index} className="border-t">
+                <tr key={index} className={`border-t ${getRowStyle(item)}`}>
                   <td className="p-2 text-center">{item.position}</td>
                   <td className="p-2 flex items-center">
                     <img
@@ -123,28 +222,64 @@ export default function TransferDetails() {
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:underline"
                       >
-                        <strong>{item.itemTitle}</strong>
+                        <strong className='text-black'>{item.itemTitle}</strong>
                       </a>
                     </div>
                   </td>
-
-                  <td className="p-2 text-center">
-                    {item.quantity}
-                    </td>
-                  <td className="p-2 text-center w-1/12">
-                  {item.received}
-                  </td>
-                  <td className="p-2 text-center w-1/12">
-                  {item.damage}
-                  </td>
+                  <td className="p-2 text-center">{item.quantity}</td>
+                  <td className="p-2 text-center">{item.received}</td>
+                  <td className="p-2 text-center">{item.damage}</td>
                 </tr>
-              )
-              
-              )
+              ))
               
               }
             </tbody>
           </table>
+          
+
+
+
+
+
+
+
+
+          <div className="mt-8 space-y-4">
+    {removedItems && (
+      <SummarySection
+        title="- Removed -"
+        content={removedItems}
+        onCopy={() => copyToClipboard(removedItems)}
+      />
+    )}
+    {damagedItems && (
+      <SummarySection
+        title="- Damaged -"
+        content={damagedItems}
+        onCopy={() => copyToClipboard(damagedItems)}
+      />
+    )}
+    {receivedItems && (
+      <SummarySection
+        title="- Received -"
+        content={receivedItems}
+        onCopy={() => copyToClipboard(receivedItems)}
+      />
+    )}
+  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
         </div>
       </main>
 
